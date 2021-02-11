@@ -1,6 +1,7 @@
 import { Client } from 'tmi.js';
 import dotenv from 'dotenv';
 import spotify from './spotify';
+import twitch from './twitch';
 
 dotenv.config();
 
@@ -17,6 +18,9 @@ const client = new Client({
 });
 
 client.connect();
+
+let badSongId: string;
+let badSongVote = new Set<string>();
 
 client.on('message', async (channel, tags, message, _self) => {
   if (message.toLowerCase() === '!song') {
@@ -43,6 +47,40 @@ client.on('message', async (channel, tags, message, _self) => {
       }
     } else {
       client.say(channel, 'Aktuell läuft nichts auf Spotify.')
+    }
+  }
+  if (message.toLowerCase() === '!viewers') {
+    const user = await twitch.kraken.users.getUserByName("yanniz0r");
+    const [stream] = await Promise.all([
+      user?.getStream(),
+    ]);
+    client.say(channel, `Aktuell hat der Stream ${stream?.viewers} Zuschauer`);
+  }
+  if (message.toLowerCase() === '!schlechtersong') {
+    const user = await twitch.kraken.users.getUserByName("yanniz0r");
+    const [stream, track] = await Promise.all([
+      user?.getStream(),
+      spotify.getMyCurrentPlayingTrack()
+    ]);
+    if (!stream) {
+      return;
+    }
+    const necessaryVotes = Math.ceil(stream.viewers / 2);
+    if (!track.body.item) {
+      client.say(channel, 'Aktuell läuft keine Musik.');
+      return;
+    }
+    if (track.body.item.id !== badSongId) {
+      badSongVote.clear();
+      badSongId = track.body.item?.id;
+    }
+    badSongVote.add(tags.username!);
+    if (badSongVote.size >= necessaryVotes) {
+      await spotify.skipToNext();
+      badSongVote.clear();
+      client.say(channel, 'Ist ja gut. Der Song wurde geskipped.')
+    } else {
+      client.say(channel, `${badSongVote.size === 1 ? 'Ein:e Viewer:in findet' : `${badSongVote.size} Viewer:innen finden den`} aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei ${necessaryVotes} Hatern skippen wir den Song.`)
     }
   }
 })

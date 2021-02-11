@@ -6,7 +6,7 @@ import open from "open";
 dotenv.config();
 
 const PORT = 1337;
-const SCOPES = ['user-read-currently-playing', 'playlist-modify-public']
+const SCOPES = ['user-read-currently-playing', 'playlist-modify-public', 'user-modify-playback-state']
 
 const spotify = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
@@ -20,7 +20,7 @@ app.use('/spotify-redirect', (request, response) => {
   const code = request.query.code as string;
   spotify.authorizationCodeGrant(code, (error, spotifyResponse) => {
     if (error) {
-      console.error(error);
+      console.error("Could not authorize code grant", error);
     }
     const accessToken = spotifyResponse.body.access_token
     spotify.setAccessToken(accessToken);
@@ -35,7 +35,7 @@ app.get('/spotify-login', (request, response) => {
 
 app.listen(PORT, () => {
   console.log(`Spotify auth server running on port ${PORT}.`);
-  open(`http://localhost:1337/spotify-login`)
+  open(`http://localhost:${PORT}/spotify-login`)
 })
 
 export default spotify;

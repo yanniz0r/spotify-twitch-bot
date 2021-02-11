@@ -19,6 +19,7 @@
     "express": "^4.17.1",
     "open": "^7.4.0",
     "spotify-web-api-node": "^5.0.2",
-    "tmi.js": "^1.7.1"
+    "tmi.js": "^1.7.1",
+    "twitch": "^4.4.10"
   }
 }
