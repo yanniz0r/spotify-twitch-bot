@@ -83,4 +83,7 @@ client.on('message', async (channel, tags, message, _self) => {
       client.say(channel, `${badSongVote.size === 1 ? 'Ein:e Viewer:in findet' : `${badSongVote.size} Viewer:innen finden den`} aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei ${necessaryVotes} Hatern skippen wir den Song.`)
     }
   }
+  if (message.toLowerCase() === '!spotify') {
+    client.say(tags.username!, 'Um die Songs zu Steuern, kannst du die folgenden Commands verwenden: !song (Nennt dir den Namen vom aktuell laufenden Song), !gutersong (Du packst den Song in die Playlist und hörst ihn wieder wenn du treu bist <3), !schlechter (Du votest für einen Skip)')
+  }
 })
