@@ -1,6 +1,7 @@
 import SpotifyWebApi from "spotify-web-api-node";
 import express from "express";
 import dotenv from 'dotenv';
+import open from "open";
 
 dotenv.config();
 
@@ -33,7 +34,8 @@ app.get('/spotify-login', (request, response) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Spotify auth server running on port ${PORT}`)
+  console.log(`Spotify auth server running on port ${PORT}.`);
+  open(`http://localhost:1337/spotify-login`)
 })
 
 export default spotify;

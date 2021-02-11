@@ -18,7 +18,7 @@ const client = new Client({
 
 client.connect();
 
-client.on('message', (channel, tags, message, _self) => {
+client.on('message', async (channel, tags, message, _self) => {
   if (message.toLowerCase() === '!song') {
     spotify.getMyCurrentPlayingTrack()
       .then((response) => {
@@ -29,15 +29,20 @@ client.on('message', (channel, tags, message, _self) => {
         }
       });
   }
-  if (message.toLowerCase() === '!gutersong') {
-    spotify.getMyCurrentPlayingTrack()
-      .then(async (response) => {
-        if (response.body.item) {
-          await spotify.addTracksToPlaylist(FAN_FAVES_PLAYLIST_ID, [response.body.item.uri]);
-          client.say(channel, `Ich habe "${response.body.item.name}" von "${response.body.item.artists[0].name}" in die Favoriten gepackt. Danke für den Input, ${tags.username}.`)
-        } else {
-          client.say(channel, 'Aktuell läuft nichts auf Spotify.')
-        }
-      });
+  if (message.toLowerCase() === '!gutersong') {    
+    const [currentlyPlayingTrack, playListTracks] = await Promise.all([
+      spotify.getMyCurrentPlayingTrack(),
+      spotify.getPlaylistTracks(FAN_FAVES_PLAYLIST_ID)
+    ]);
+    if (currentlyPlayingTrack.body.item) {
+      if (playListTracks.body.items.find(playlistTrack => playlistTrack.track.id === currentlyPlayingTrack.body.item?.id)) {
+        client.say(channel, `Der Song ist bereits in der Playlist. Scheinst einen guten Geschmack zu haben, ${tags.username}`);
+      } else {
+        await spotify.addTracksToPlaylist(FAN_FAVES_PLAYLIST_ID, [currentlyPlayingTrack.body.item.uri]);
+        client.say(channel, `Ich habe "${currentlyPlayingTrack.body.item.name}" von "${currentlyPlayingTrack.body.item.artists[0].name}" in die Favoriten gepackt. Danke für den Input, ${tags.username}.`)
+      }
+    } else {
+      client.say(channel, 'Aktuell läuft nichts auf Spotify.')
+    }
   }
 })
