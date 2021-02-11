@@ -5,15 +5,15 @@ import twitch from './twitch';
 
 dotenv.config();
 
-const FAN_FAVES_PLAYLIST_ID = "49RivMoJZhGLlTz3QiEzBo";
+const FAN_FAVES_PLAYLIST_ID = process.env.SPOTIFY_FAN_FAVES_PLAYLIST_ID as string;
 
 const client = new Client({
   identity: {
-    username: 'yannib0t',
+    username: process.env.TWITCH_USERNAME,
     password: process.env.TWITCH_SECRET,
   },
   channels: [
-    'yanniz0r'
+    process.env.TWITCH_CHANNEL as string,
   ]
 });
 
