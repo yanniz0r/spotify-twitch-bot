@@ -1,9 +1,10 @@
 import { Client } from 'tmi.js';
 import dotenv from 'dotenv';
 import spotify from './spotify';
-import twitch from './twitch';
 import TwitchBot from './twitch-bot';
 import TMIConnectionAdapter from './tmi-connection-adapter';
+import twitch from './twitch';
+import BadSongHandler from './commands/bad-song-handler';
 
 dotenv.config();
 
@@ -67,35 +68,4 @@ bot.addCommandHandler({
   }
 })
 
-let badSongId: string;
-let badSongVote = new Set<string>();
-bot.addCommandHandler({
-  command: 'schlechtersong',
-  async handle(bot, message) {
-    const user = await twitch.kraken.users.getUserByName("yanniz0r");
-    const [stream, track] = await Promise.all([
-      user?.getStream(),
-      spotify.getMyCurrentPlayingTrack()
-    ]);
-    if (!stream) {
-      return;
-    }
-    const necessaryVotes = Math.ceil(stream.viewers / 2);
-    if (!track.body.item) {
-      bot.adapter.sendMessage(message.channel, 'Aktuell läuft keine Musik.');
-      return;
-    }
-    if (track.body.item.id !== badSongId) {
-      badSongVote.clear();
-      badSongId = track.body.item?.id;
-    }
-    badSongVote.add(message.user.username);
-    if (badSongVote.size >= necessaryVotes) {
-      await spotify.skipToNext();
-      badSongVote.clear();
-      bot.adapter.sendMessage(message.channel, 'Ist ja gut. Der Song wurde geskipped.')
-    } else {
-      bot.adapter.sendMessage(message.channel, `${badSongVote.size === 1 ? 'Ein:e Viewer:in findet' : `${badSongVote.size} Viewer:innen finden den`} aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei ${necessaryVotes} Hatern skippen wir den Song.`)
-    }
-  }
-})
+bot.addCommandHandler(new BadSongHandler())
