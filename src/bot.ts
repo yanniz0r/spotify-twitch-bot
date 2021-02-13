@@ -2,6 +2,8 @@ import { Client } from 'tmi.js';
 import dotenv from 'dotenv';
 import spotify from './spotify';
 import twitch from './twitch';
+import TwitchBot from './twitch-bot';
+import TMIConnectionAdapter from './tmi-connection-adapter';
 
 dotenv.config();
 
@@ -17,46 +19,59 @@ const client = new Client({
   ]
 });
 
-client.connect();
+const tmiAdapter = new TMIConnectionAdapter(client);
+const bot = new TwitchBot(tmiAdapter);
 
-let badSongId: string;
-let badSongVote = new Set<string>();
-
-client.on('message', async (channel, tags, message, _self) => {
-  if (message.toLowerCase() === '!song') {
-    spotify.getMyCurrentPlayingTrack()
-      .then((response) => {
-        if (response.body.item) {
-          client.say(channel, `Jetzt gerade läuft "${response.body.item.name}" von "${response.body.item.artists[0].name}".`)
-        } else {
-          client.say(channel, 'Aktuell läuft nichts auf Spotify.')
-        }
-      });
+bot.addCommandHandler({
+  command: 'song',
+  async handle(bot, message) {
+    const response = await spotify.getMyCurrentPlayingTrack();
+    console.log({ message, response })
+    if (response.body.item) {
+      bot.adapter.sendMessage(message.channel, `Jetzt gerade läuft "${response.body.item.name}" von "${response.body.item.artists[0].name}".`)
+    } else {
+      bot.adapter.sendMessage(message.channel, 'Aktuell läuft nichts auf Spotify.')
+    }
   }
-  if (message.toLowerCase() === '!gutersong') {    
+})
+
+bot.addCommandHandler({
+  command: 'gutersong',
+  async handle(bot, message) {
     const [currentlyPlayingTrack, playListTracks] = await Promise.all([
       spotify.getMyCurrentPlayingTrack(),
       spotify.getPlaylistTracks(FAN_FAVES_PLAYLIST_ID)
     ]);
     if (currentlyPlayingTrack.body.item) {
       if (playListTracks.body.items.find(playlistTrack => playlistTrack.track.id === currentlyPlayingTrack.body.item?.id)) {
-        client.say(channel, `Der Song ist bereits in der Playlist. Scheinst einen guten Geschmack zu haben, ${tags.username}`);
+        bot.adapter.sendMessage(message.channel, `Der Song ist bereits in der Playlist. Scheinst einen guten Geschmack zu haben, ${message.user.username}`);
       } else {
         await spotify.addTracksToPlaylist(FAN_FAVES_PLAYLIST_ID, [currentlyPlayingTrack.body.item.uri]);
-        client.say(channel, `Ich habe "${currentlyPlayingTrack.body.item.name}" von "${currentlyPlayingTrack.body.item.artists[0].name}" in die Favoriten gepackt. Danke für den Input, ${tags.username}.`)
+        bot.adapter.sendMessage(message.channel, `Ich habe "${currentlyPlayingTrack.body.item.name}" von "${currentlyPlayingTrack.body.item.artists[0].name}" in die Favoriten gepackt. Danke für den Input, ${message.user.username}.`)
       }
     } else {
-      client.say(channel, 'Aktuell läuft nichts auf Spotify.')
+      bot.adapter.sendMessage(message.channel, 'Aktuell läuft nichts auf Spotify.')
     }
   }
-  if (message.toLowerCase() === '!viewers') {
+})
+
+
+bot.addCommandHandler({
+  command: 'viewers',
+  async handle(bot, message) {
     const user = await twitch.kraken.users.getUserByName("yanniz0r");
     const [stream] = await Promise.all([
       user?.getStream(),
     ]);
-    client.say(channel, `Aktuell hat der Stream ${stream?.viewers} Zuschauer`);
+    bot.adapter.sendMessage(message.channel, `Aktuell hat der Stream ${stream?.viewers} Zuschauer`);
   }
-  if (message.toLowerCase() === '!schlechtersong') {
+})
+
+let badSongId: string;
+let badSongVote = new Set<string>();
+bot.addCommandHandler({
+  command: 'schlechtersong',
+  async handle(bot, message) {
     const user = await twitch.kraken.users.getUserByName("yanniz0r");
     const [stream, track] = await Promise.all([
       user?.getStream(),
@@ -67,23 +82,20 @@ client.on('message', async (channel, tags, message, _self) => {
     }
     const necessaryVotes = Math.ceil(stream.viewers / 2);
     if (!track.body.item) {
-      client.say(channel, 'Aktuell läuft keine Musik.');
+      bot.adapter.sendMessage(message.channel, 'Aktuell läuft keine Musik.');
       return;
     }
     if (track.body.item.id !== badSongId) {
       badSongVote.clear();
       badSongId = track.body.item?.id;
     }
-    badSongVote.add(tags.username!);
+    badSongVote.add(message.user.username);
     if (badSongVote.size >= necessaryVotes) {
       await spotify.skipToNext();
       badSongVote.clear();
-      client.say(channel, 'Ist ja gut. Der Song wurde geskipped.')
+      bot.adapter.sendMessage(message.channel, 'Ist ja gut. Der Song wurde geskipped.')
     } else {
-      client.say(channel, `${badSongVote.size === 1 ? 'Ein:e Viewer:in findet' : `${badSongVote.size} Viewer:innen finden den`} aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei ${necessaryVotes} Hatern skippen wir den Song.`)
+      bot.adapter.sendMessage(message.channel, `${badSongVote.size === 1 ? 'Ein:e Viewer:in findet' : `${badSongVote.size} Viewer:innen finden den`} aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei ${necessaryVotes} Hatern skippen wir den Song.`)
     }
-  }
-  if (message.toLowerCase() === '!spotify') {
-    client.say(tags.username!, 'Um die Songs zu Steuern, kannst du die folgenden Commands verwenden: !song (Nennt dir den Namen vom aktuell laufenden Song), !gutersong (Du packst den Song in die Playlist und hörst ihn wieder wenn du treu bist <3), !schlechter (Du votest für einen Skip)')
   }
 })
