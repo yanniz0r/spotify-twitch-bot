@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GoodSongHandler adds a new song to the playlist and sends corresponding message 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "test-playlist-id",
+      Array [
+        "tfwdtfs",
+      ],
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`GoodSongHandler does not add duplicates and sends corresponding message 1`] = `[MockFunction]`;
+
+exports[`GoodSongHandler sends a corresponding message when no track is running 1`] = `[MockFunction]`;

@@ -1,4 +1,4 @@
-import { TwitchCommandHandler } from "./twitch-command-handler";
+import TwitchCommandHandler from "./twitch-command-handler";
 import TwitchConnectionAdapter from "./twitch-connection-adapter";
 
 export interface TwitchMessage {

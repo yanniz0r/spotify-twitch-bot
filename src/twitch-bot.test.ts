@@ -27,6 +27,7 @@ describe('TwitchBot', () => {
       handle,
     });
     twitchBot.receiveMessage({ text: '!somecommand arg1 arg2 arg3 arg4', user, channel });
+    twitchBot.receiveMessage({ text: 'test arg1 arg2 arg3 arg4', user, channel });
     expect(handle).not.toBeCalled();
   })
 

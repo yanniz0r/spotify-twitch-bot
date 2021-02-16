@@ -1,19 +1,25 @@
-import spotify from '../spotify';
-import twitch from '../twitch';
+import SpotifyWebApi from 'spotify-web-api-node';
+import { ApiClient } from 'twitch/lib';
 import TwitchBot, { TwitchMessage } from '../twitch-bot';
-import { TwitchCommandHandler } from '../twitch-command-handler';
+import TwitchCommandHandler from '../twitch-command-handler';
 
 class BadSongHandler implements TwitchCommandHandler  {
-  public command = 'gutersong';
+
+  constructor(
+    private spotify: SpotifyWebApi,
+    private twitch: ApiClient,
+  ) {}
+
+  public command = 'schlechtersong';
 
   private badSongId?: string;
   private badSongVote = new Set<string>();
 
   async handle(bot: TwitchBot, message: TwitchMessage) {
-    const user = await twitch.kraken.users.getUserByName("yanniz0r");
+    const user = await this.twitch.kraken.users.getUserByName("yanniz0r");
     const [stream, track] = await Promise.all([
       user?.getStream(),
-      spotify.getMyCurrentPlayingTrack()
+      this.spotify.getMyCurrentPlayingTrack()
     ]);
     if (!stream) {
       return;
@@ -29,7 +35,7 @@ class BadSongHandler implements TwitchCommandHandler  {
     }
     this.badSongVote.add(message.user.username);
     if (this.badSongVote.size >= necessaryVotes) {
-      await spotify.skipToNext();
+      await this.spotify.skipToNext();
       this.badSongVote.clear();
       bot.adapter.sendMessage(message.channel, 'Ist ja gut. Der Song wurde geskipped.')
     } else {

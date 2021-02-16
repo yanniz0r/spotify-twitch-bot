@@ -1,0 +1,93 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BadSongHandler registers that someone does not like the song 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "#test",
+      "Ein:e Viewer:in findet aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei 3 Hatern skippen wir den Song.",
+    ],
+    Array [
+      "#test",
+      "2 Viewer:innen finden den aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei 3 Hatern skippen wir den Song.",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`BadSongHandler restarts counting when song changes 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "#test",
+      "Ein:e Viewer:in findet aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei 2 Hatern skippen wir den Song.",
+    ],
+    Array [
+      "#test",
+      "Ein:e Viewer:in findet aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei 2 Hatern skippen wir den Song.",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`BadSongHandler sends corresponding message when no track is playing 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "#test",
+      "Aktuell läuft keine Musik.",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`BadSongHandler skips song when more than half of the attending people dislike it 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "#test",
+      "Ein:e Viewer:in findet aktuellen Song schlecht. Schreibe !schlechtersong in den Chat wenn du das auch so siehst. Bei 2 Hatern skippen wir den Song.",
+    ],
+    Array [
+      "#test",
+      "Ist ja gut. Der Song wurde geskipped.",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;

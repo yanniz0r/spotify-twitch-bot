@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SongHandler sends a corresponding message when a track is playing 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "#test",
+      "Jetzt gerade läuft \\"The Fox (What Does the Fox Say?)\\" von \\"Ylvis\\".",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`SongHandler sends a corresponding message when no track is playing 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "#test",
+      "Aktuell läuft nichts auf Spotify.",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
+`;

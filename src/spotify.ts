@@ -16,6 +16,8 @@ const spotify = new SpotifyWebApi({
 
 const app = express();
 
+let refreshIntervalId: NodeJS.Timeout | undefined = undefined;
+
 app.use('/spotify-redirect', (request, response) => {
   const code = request.query.code as string;
   spotify.authorizationCodeGrant(code, (error, spotifyResponse) => {
@@ -23,7 +25,20 @@ app.use('/spotify-redirect', (request, response) => {
       console.error("Could not authorize code grant", error);
     }
     const accessToken = spotifyResponse.body.access_token
+    const refreshToken = spotifyResponse.body.refresh_token
     spotify.setAccessToken(accessToken);
+    spotify.setRefreshToken(refreshToken);
+    
+    if(refreshIntervalId) {
+      clearInterval(refreshIntervalId);
+    }
+    refreshIntervalId = setInterval(() => {
+      spotify.refreshAccessToken((error, response) => {
+        spotify.setAccessToken(response.body.access_token);
+        console.log(error, response);
+      })
+    }, 1000 * 45);
+
     response.status(200).send(`
       <!DOCTYPE html>
       <html>
