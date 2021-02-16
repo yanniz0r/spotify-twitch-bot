@@ -16,6 +16,23 @@ describe('TwitchBot', () => {
     });
     const message = { text: '!test arg1 arg2 arg3 arg4', user, channel };
     twitchBot.receiveMessage(message);
+    twitchBot.receiveMessage({
+      ...message,
+      text: 'Lorem Ipsum Dolor Sit Amet'
+    });
+    expect(handle).toBeCalledWith(expect.any(Object), message, ['arg1', 'arg2', 'arg3', 'arg4']);
+  })
+
+  it ('calls correct handler based on alias', () => {
+    const twitchBot = new TwitchBot({ register: jest.fn() } as unknown as TwitchConnectionAdapter);
+    const handle = jest.fn();
+    twitchBot.addCommandHandler({
+      command: 'test',
+      aliases: ['t'],
+      handle,
+    });
+    const message = { text: '!t arg1 arg2 arg3 arg4', user, channel };
+    twitchBot.receiveMessage(message);
     expect(handle).toBeCalledWith(expect.any(Object), message, ['arg1', 'arg2', 'arg3', 'arg4']);
   })
 
@@ -24,11 +41,13 @@ describe('TwitchBot', () => {
     const handle = jest.fn();
     twitchBot.addCommandHandler({
       command: 'test',
+      aliases: ['t'],
       handle,
     });
     twitchBot.receiveMessage({ text: '!somecommand arg1 arg2 arg3 arg4', user, channel });
-    twitchBot.receiveMessage({ text: 'test arg1 arg2 arg3 arg4', user, channel });
     expect(handle).not.toBeCalled();
+    twitchBot.receiveMessage({ text: '!test arg1 arg2 arg3 arg4', user, channel });
+    expect(handle).toBeCalledTimes(1);
   })
 
   it ('does call multiple handlers for the same command until exited', async () => {

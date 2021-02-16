@@ -4,7 +4,7 @@ import TwitchCommandHandler from "../twitch-command-handler";
 
 class GoodSongHandler implements TwitchCommandHandler {
   constructor(private playlistId: string, private spotify: SpotifyWebApi) {}
-
+  aliases = ['goodsong']
   command = 'gutersong'
 
   async handle(bot: TwitchBot, message: TwitchMessage) {

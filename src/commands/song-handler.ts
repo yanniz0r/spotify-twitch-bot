@@ -10,7 +10,6 @@ class SongHandler implements TwitchCommandHandler {
 
   async handle(bot: TwitchBot, message: TwitchMessage, args: string[]) {
     const response = await this.spotify.getMyCurrentPlayingTrack();
-    console.log({ message, response })
     if (response.body.item) {
       bot.adapter.sendMessage(message.channel, `Jetzt gerade läuft "${response.body.item.name}" von "${response.body.item.artists[0].name}".`)
     } else {

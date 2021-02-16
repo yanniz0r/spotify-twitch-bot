@@ -28,13 +28,22 @@ class TwitchBot {
     for (const handler of this.handlers) {
       const segments = message.text.split(' ');
       const [command, ...args] = segments;
-      if (`!${handler.command}` === command) {
+      if (this.handlerMatchesCommand(handler, command)) {
         const shouldExit = await handler.handle(this, message, args);
         if (shouldExit) {
           return;
         }
       }
     }
+  }
+
+  private handlerMatchesCommand(handler: TwitchCommandHandler, command: string): boolean {
+    if (`!${handler.command}` === command) return true;
+    if (!handler.aliases) return false;
+    for (let alias of handler.aliases) {
+      if (`!${alias}` === command) return true;
+    }
+    return false;
   }
 
 }
